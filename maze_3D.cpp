@@ -1298,6 +1298,7 @@ class Person{
 		float posz;
 		bool isMoving;
 		bool levitate;
+		bool onMTile;
 		int dir;
 		float t;
 		int hitno;
@@ -1309,12 +1310,15 @@ class Person{
 		int score;
 		int speed;
 		float beforeht;
+		float beforeht1;
 		Person(){
 			isMoving=false;
+			onMTile=false;
 			posx=0;
 			posy=2.5;
 			posz=0;
 			beforeht = posy;
+			beforeht1 = posy;
 			dir=0;
 			t=0;
 			coins=0;
@@ -1614,6 +1618,8 @@ class Person{
 			Matrices.model *= moveBody;
 			if(!jump)
 				beforeht = posy;
+			if(!onMTile)
+				beforeht1 = posy;
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			draw3DObject(per);
@@ -1734,8 +1740,18 @@ class Person{
 			z = posz;
 			index = (10*z + x);
 			ind1 = index;
-			if(brick[ind1].isMove && brick[ind1].posy < 1.5 && posy <= 2.5){
-				fall();		
+			if(brick[ind1].isMove && !jump && !levitate){
+				onMTile=true;
+				//fall();
+				posy = brick[ind1].posy + 2.5;		
+			}
+			else{
+				onMTile=false;
+				if(posy>=2.5){
+					posy = beforeht1;
+					if(!jump && !levitate)
+						posy = 2.5;
+				}
 			}
 		}
 		void checkBoundary(){
