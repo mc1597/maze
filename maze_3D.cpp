@@ -502,7 +502,7 @@ Heart heart[4];
 
 class Brick{
 	public:
-		VAO *br,*gif[16],*top[2],*left[2],*right[2],*back[2];
+		VAO *br,*gif[16],*top[2],*left[2],*right[2],*back[2],*bottom[2];
 		float posx;
 		float posy;
 		float posz;
@@ -698,15 +698,54 @@ class Brick{
 			top[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
 
 		}
+
+	 void createDown(GLuint textureID,int i){
+                        static const GLfloat vertex_buffer_data [] = {
+                                0.5f, -1, 0.5f,
+                                -0.5f, -1, 0.5f,
+                                -0.5f, -1,-0.5f,
+
+                                -0.5f, -1,-0.5f,
+                                0.5f, -1,-0.5f,
+                                0.5f, -1, 0.5f,
+                        };
+                        static const GLfloat color_buffer_data [] = {
+                                1,0,0, // color 1
+                                0,0,1, // color 2
+                                0,1,0, // color 3
+
+                                0,1,0, // color 3
+                                0.3,0.3,0.3, // color 4
+                                1,0,0  // color 1
+                        };
+
+                        // Texture coordinates start with (0,0) at top left of the image to (1,1) at bot right
+                        static const GLfloat texture_buffer_data [] = {
+                                0,1, // TexCoord 1 - bot left
+                                1,1, // TexCoord 2 - bot right
+                                1,0, // TexCoord 3 - top right
+
+                                1,0, // TexCoord 3 - top right
+                                0,0, // TexCoord 4 - top left
+                                0,1  // TexCoord 1 - bot left
+                        };
+
+                        // create3DTexturedObject creates and returns a handle to a VAO that can be used later
+                        bottom[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
+
+                }
+
+
 		void createBack(GLuint textureID,int i){
 			static const GLfloat vertex_buffer_data [] = {
-				0.5f, 1, 0.5f,
-				-0.5f,-1,-0.5f,
-				-0.5f, 1,-0.5f,
+				-0.5f, -1, -0.5f,
+                                0.5f,-1, -0.5f,
+                                0.5f,1, -0.5f,
 
-				-0.5f, 1,-0.5f,
-				0.5f,-1,-0.5f, 
-				0.5f, 1, 0.5f,
+                                0.5f,1, -0.5f,
+                                -0.5f, 1, -0.5f,
+                                -0.5f, -1, -0.5f,
+
 			};
 			static const GLfloat color_buffer_data [] = {
 				1,0,0, // color 1
@@ -867,6 +906,7 @@ class Brick{
 			draw3DTexturedObject(right[index2]);
 			draw3DTexturedObject(left[index2]);
 			draw3DTexturedObject(back[index2]);
+			draw3DTexturedObject(bottom[index2]);
 
 
 		}
@@ -1056,7 +1096,7 @@ Obstacle obstacle[3];
 class Can{
 
 	public:
-		VAO *sh,*hs;
+		VAO *sh,*hs,*straw,*umb;
 		float posx;
 		float posy;
 		float posz;
@@ -1088,21 +1128,23 @@ class Can{
 					vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
 					vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
 				}
+					factor+=0.0003;
+
 			}
 
 			GLfloat* color_buffer_data = new GLfloat [3*numVertices*1500];
 
 			for(j=0;j<1500;j++){
 				for (i=0; i<numVertices; i++){
-					if(j>=1&&j<=10||j>=1493&&j<=1499){
+					if(j>=1493&&j<=1499){
 						color_buffer_data [3*numVertices*j + 3*i] = 0;
-						color_buffer_data [3*numVertices*j + 3*i + 1] = 0;
-						color_buffer_data [3*numVertices*j + 3*i + 2] = 0;
+						color_buffer_data [3*numVertices*j + 3*i + 1] = 0.78;
+						color_buffer_data [3*numVertices*j + 3*i + 2] = 0.9;
 					}
 					else{
-						color_buffer_data [3*numVertices*j + 3*i] = 0;
-						color_buffer_data [3*numVertices*j + 3*i + 1] = 0.6;
-						color_buffer_data [3*numVertices*j + 3*i + 2] = 0.6;
+						color_buffer_data [3*numVertices*j + 3*i] = 0.01;
+						color_buffer_data [3*numVertices*j + 3*i + 1] = 0.13;
+						color_buffer_data [3*numVertices*j + 3*i + 2] = 0.4;
 					}
 				}
 			}
@@ -1111,6 +1153,70 @@ class Can{
 
 		}
 		
+		void createStraw(){
+                        float factor=0.1;
+                        int numVertices = 360,i;
+                        float height=0.001;
+                        int j;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices*1500];
+                        for(j=0;j<1500;j++){
+                                for (i=0; i<numVertices; i++) {
+                                        vertex_buffer_data [3*numVertices*j + 3*i] = factor*radius*cos(i*M_PI/180.0f);
+                                        vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
+                                        vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
+                                }
+
+                        }
+
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices*1500];
+
+                        for(j=0;j<1500;j++){
+                                for (i=0; i<numVertices; i++){
+                                                color_buffer_data [3*numVertices*j + 3*i] = 1;
+                                                color_buffer_data [3*numVertices*j + 3*i + 1] = 1;
+                                                color_buffer_data [3*numVertices*j + 3*i + 2] = 1;
+                                }
+                        }
+
+                        straw = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+                }
+
+		void createUmb(int slices,int stacks){
+                        int n = 2 * (slices + 1) * stacks;
+                        int i = 0;
+                        GLfloat *points = new GLfloat[3*n];
+                        GLfloat *color = new GLfloat[3*n];
+                        for (float theta = -M_PI / 2; theta < M_PI/2 - 0.0001; theta += M_PI / stacks) {
+                                for (float phi = -M_PI; phi <= 0.0001; phi += M_PI / slices) {
+
+                                        points[3*i] = radius*(cos(theta) * sin(phi));
+                                        points[3*i + 1] = radius*(-sin(theta));
+                                        points[3*i + 2] = radius*(cos(theta) * cos(phi));
+
+                                        color[3*i] = 1;
+                                        color[3*i + 1] = 0.2;
+                                        color[3*i + 2] = 0.6;
+
+                                        i++;
+
+                                        points[3*i] = radius*(cos(theta + M_PI / stacks) * sin(phi));
+                                        points[3*i + 1] = radius*(-sin(theta + M_PI / stacks));
+                                        points[3*i + 2] = radius*(cos(theta + M_PI / stacks) * cos(phi));
+
+                                        color[3*i] = 1;
+                                        color[3*i + 1] = 0.2;
+                                        color[3*i + 2] = 0.6;
+
+                                        i++;
+                                }
+                        }
+
+                        umb = create3DObject(GL_TRIANGLE_STRIP, n, points, color, GL_FILL);
+
+                }
+
+
 		void draw(){
 
 			glUseProgram (programID);
@@ -1129,13 +1235,32 @@ class Can{
 			//Matrices.view = glm::lookAt( eye, target, up ); // Rotating Camera for 3D
 			glm::mat4 VP = Matrices.projection * Matrices.view;
 			glm::mat4 MVP;  // MVP = Projection * View * Model
+			angle=15;
 			Matrices.model = glm::mat4(1.0f);
-			glm::mat4 moveSh = glm::translate(glm::vec3(posx,posy,posz));
-			//glm::mat4 rotateSh = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,1,0));
+			glm::mat4 moveSt = glm::translate(glm::vec3(posx-0.15,posy,posz));
+			glm::mat4 rotateSt = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
 			center[0] = posx;
 			center[1] = posy;
 			center[2] = posz;
-			//angle+=2;
+			Matrices.model *= (moveSt*rotateSt);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(straw);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveUmb = glm::translate(glm::vec3(0.1,1.35,0));
+			angle=-90;
+			glm::mat4 rotateUmb1 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
+			angle=20;
+			glm::mat4 rotateUmb2 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,1,0));
+			Matrices.model *= (moveSt * rotateSt * moveUmb * rotateUmb1 * rotateUmb2);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(umb);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveSh = glm::translate(glm::vec3(posx,posy,posz));
+			//glm::mat4 rotateSh = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,1,0));
 			Matrices.model *= (moveSh);
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -1468,21 +1593,48 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_SPACE:
 				jump=true;	
 				break;
-			case GLFW_KEY_UP:			
-				person.posz-=1;
-				person.dir=2;
+			case GLFW_KEY_UP:
+				if(view==1||view==2){
+					person.posz+=1;
+					person.dir=4;
+				}	
+				else{		
+					person.posz-=1;
+					person.dir=2;
+				}
 				break;
 			case GLFW_KEY_DOWN:
-				person.posz+=1;
-				person.dir=4;
+				if(view==1||view==2){
+					person.posz-=1;
+					person.dir=2;
+				}
+		
+				else{		
+					person.posz+=1;
+					person.dir=4;
+				}
 				break;
 			case GLFW_KEY_LEFT:
-				person.posx-=1;
-				person.dir=3;
+				if(view==1||view==2){
+					person.posx+=1;
+					person.dir=1;
+				}
+
+				else{
+					person.posx-=1;
+					person.dir=3;
+				}
 				break;
 			case GLFW_KEY_RIGHT:
-				person.posx+=1;
-				person.dir=1;
+				if(view==1||view==2){
+					person.posx-=1;
+					person.dir=3;
+				}
+		
+				else{
+					person.posx+=1;
+					person.dir=1;
+				}
 				break;
 			default:
 				break;
@@ -1657,6 +1809,8 @@ void initGL (GLFWwindow* window, int width, int height)
 		obstacle[i].create(30,30);
 	}
 	can.create();
+	can.createStraw();
+        can.createUmb(30,30);
 	brick[86].isThere = false;
 	for(i=0;i<6;i++){
 		light[i].posx = rand()%10;
@@ -1697,8 +1851,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	GLuint textureID14 = createTexture("frame-014.png");
 	GLuint textureID15 = createTexture("frame-015.png");
 	GLuint textureID16 = createTexture("frame-016.png");	
-	GLuint textureID17 = createTexture("sea3.png");	
-	GLuint textureID18 = createTexture("sea3.png");	
+	GLuint textureID17 = createTexture("sand2.png");	
+	GLuint textureID18 = createTexture("sand2.png");	
 	
 
 	textureProgramID = LoadShaders( "TextureRender.vert", "TextureRender.frag" );
@@ -1728,6 +1882,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	brick[i].createFront(textureID16,15);
 	brick[i].createUp(textureID17,0);
 	brick[i].createUp(textureID18,1);
+	brick[i].createDown(textureID17,0);
+	brick[i].createDown(textureID18,1);
 	brick[i].createRight(textureID17,0);
 	brick[i].createRight(textureID18,1);
 	brick[i].createLeft(textureID17,0);
