@@ -330,10 +330,12 @@ glm::vec3 up4 (0, 1, 0);
 // Up - Up vector defines tilt of camera.  Don't change unless you are sure!!
 //glm::vec3 up (0, 1, 0);
 int view=0;
+int choice=0;
 float deltaTime=0;
 bool jump=false;
 bool now=false;
-
+float eye4x = 8,eye4y = 8, eye4z = 11;
+float target4x = 4,target4y = 8, target4z = 11;
 class Background{
 	public:
 
@@ -870,7 +872,7 @@ class Brick{
 			posz = i;
 			posx = j;
 			if(isMove){
-				posy-=dir*0.03;
+				posy-=dir*(0.01 + i*0.001 + j*0.001);
 				if(posy < -0.75 || posy > 0.55)
 					dir = -1*dir;
 			}
@@ -1805,6 +1807,65 @@ Person person;
  * Customizable functions *
  **************************/
 
+void changeCam(int choice){
+	if(choice==0){
+		eye4 = glm::vec3(8,8,11);
+		target4 = glm::vec3(4,2,1);
+	
+		eye4x = 8;
+		eye4y = 8;
+		eye4z = 11;
+		
+		target4x = 4;	
+		target4y = 2;	
+		target4z = 1;	
+	
+	}
+	else if(choice==1){
+		eye4 = glm::vec3(8,8,-11);
+		target4 = glm::vec3(4,2,-1);
+	
+		eye4x = 8;
+		eye4y = 8;
+		eye4z = -11;
+		
+		target4x = 4;	
+		target4y = 2;	
+		target4z = -1;	
+	
+	}
+
+	else if(choice==2){
+		eye4 = glm::vec3(-8,8,-11);
+		target4 = glm::vec3(-4,2,-1);
+	
+		eye4x = -8;
+		eye4y = 8;
+		eye4z = -11;
+		
+		target4x = -4;	
+		target4y = 2;	
+		target4z = -1;	
+	
+	}
+
+	else if(choice==3){
+		eye4 = glm::vec3(-8,8,11);
+		target4 = glm::vec3(-4,2,1);
+	
+		eye4x = -8;
+		eye4y = 8;
+		eye4z = 11;
+		
+		target4x = -4;	
+		target4y = 2;	
+		target4z = 1;	
+	
+	}
+
+}
+
+
 
 
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -1837,6 +1898,9 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_P:
 				person.dir=0;
 				break;
+			case GLFW_KEY_C:
+				choice=(choice+1)%4;
+				changeCam(choice);
 			default:
 				break;
 		}
@@ -1850,7 +1914,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				jump=true;	
 				break;
 			case GLFW_KEY_UP:
-				if(view==1||view==2){
+				if(view==1||view==2||choice==1||choice==2){
 					person.posz+=1;
 					person.dir=4;
 				}	
@@ -1860,7 +1924,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				}
 				break;
 			case GLFW_KEY_DOWN:
-				if(view==1||view==2){
+				if(view==1||view==2||choice==1||choice==2){
 					person.posz-=1;
 					person.dir=2;
 				}
@@ -1871,7 +1935,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				}
 				break;
 			case GLFW_KEY_LEFT:
-				if(view==1||view==2){
+				if(view==1||view==2||choice==1||choice==2){
 					person.posx+=1;
 					person.dir=1;
 				}
@@ -1882,7 +1946,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				}
 				break;
 			case GLFW_KEY_RIGHT:
-				if(view==1||view==2){
+				if(view==1||view==2||choice==1||choice==2){
 					person.posx-=1;
 					person.dir=3;
 				}
@@ -1955,11 +2019,20 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 
 float zoom_x,zoom_y,zoom_z;
 void scroll(GLFWwindow* window,double x,double y){
-  eye4 = glm::vec3(8+zoom_x,8+zoom_y,11+zoom_z);	
+	if(choice==0)
+	  	eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
+	else if(choice==1)
+	  	eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
+	else if(choice==2)
+	  	eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
+	else if(choice==3)
+	  	eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
 	zoom_x += -y*0.5;
-	zoom_y += -y*0.5;
-	zoom_z += -y*0.5;
+  	zoom_y += -y*0.5;
+  	zoom_z += -y*0.5;
+
 }
+
 /* Executed when window is resized to 'width' and 'height' */
 /* Modify the bounds of the screen here in glm::ortho or Field of View in glm::Perspective */
 void reshapeWindow (GLFWwindow* window, int width, int height)
@@ -2071,13 +2144,15 @@ void initGL (GLFWwindow* window, int width, int height)
 	person.createLimb(3);
 	person.createHead(30,30);
 	for(i=0;i<3;i++){
-		obstacle[i].posx = rand()%10;
+		obstacle[i].posx = rand()%9 + 1;
 		obstacle[i].posy = 2;
-		obstacle[i].posz = rand()%10;
+		obstacle[i].posz = rand()%9 + 1;
 		obstacle[i].speed = (((float)(rand()%50))/1000) + 0.04;
 		obstacle[i].create(30,30);
 		//cout << obstacle[i].speed << endl;
 	}
+	can.posx = rand()%5 + 3;
+	can.posz = rand()%5 + 3;
 	can.create();
 	can.createStraw();
         can.createUmb(30,30);
@@ -2264,9 +2339,9 @@ int main (int argc, char** argv)
 			}
 			if(move_count%240==0){
 				for(i=0;i<3;i++){
-					obstacle[i].posx = rand()%10;
+					obstacle[i].posx = rand()%9 + 1;
 					obstacle[i].posy = 2;
-					obstacle[i].posz = rand()%10;
+					obstacle[i].posz = rand()%9 + 1;
 					obstacle[i].speed = (((float)(rand()%50))/1000) + 0.04;
 					obstacle[i].dir = 1;
 				}
