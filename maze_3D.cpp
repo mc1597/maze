@@ -1274,7 +1274,7 @@ Can can;
 int count=0;
 class Person{
 	public:
-		VAO *per;
+		VAO *per,*limb[4],*head;
 		float posx;
 		float posy;
 		float posz;
@@ -1289,10 +1289,11 @@ class Person{
 		int lives;
 		int coins;
 		int score;
+		int speed;
 		Person(){
 			isMoving=false;
 			posx=0;
-			posy=1.5;
+			posy=2.5;
 			posz=0;
 			dir=0;
 			t=0;
@@ -1306,6 +1307,7 @@ class Person{
 			lives = 3;
 			score = 0;
 			radius = sqrt(3)/2;
+			speed = 10;
 		}
 
 		void create(){
@@ -1413,6 +1415,159 @@ class Person{
 
 		}	
 
+		void createHead(int slices,int stacks){
+			int n = 2 * (slices + 1) * stacks;
+			int i = 0;
+			float radius = 0.375; 
+			GLfloat *points = new GLfloat[3*n];
+			GLfloat *color = new GLfloat[3*n];
+			for (float theta = -M_PI / 2; theta < M_PI / 2 - 0.0001; theta += M_PI / stacks) {
+				for (float phi = -M_PI; phi <= M_PI + 0.0001; phi += 2 * M_PI / slices) {
+
+					points[3*i] = radius*(cos(theta) * sin(phi));
+					points[3*i + 1] = radius*(-sin(theta));
+					points[3*i + 2] = radius*(cos(theta) * cos(phi));
+					
+					color[3*i] = 1;
+					color[3*i + 1] = 1;
+					color[3*i + 2] = 0;
+
+					if(theta> -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					color[3*i] = 0;
+					color[3*i + 1] = 0;
+					color[3*i + 2] = 0;
+					}
+
+					i++;
+
+					points[3*i] = radius*(cos(theta + M_PI / stacks) * sin(phi));
+					points[3*i + 1] = radius*(-sin(theta + M_PI / stacks));
+					points[3*i + 2] = radius*(cos(theta + M_PI / stacks) * cos(phi));
+
+					color[3*i] = 1;
+					color[3*i + 1] = 1;
+					color[3*i + 2] = 0;
+
+					if(theta > -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					color[3*i] = 0;
+					color[3*i + 1] = 0;
+					color[3*i + 2] = 0;
+					}
+					i++;
+				}
+			}
+
+			head = create3DObject(GL_TRIANGLE_STRIP, n, points, color, GL_FILL);
+
+		}
+
+
+		void createLimb(int i){
+			static const GLfloat vertex_buffer_data [] = {
+				-0.1f,-0.5f,-0.1f, // triangle 1 : begin
+				-0.1f,-0.5f, 0.1f,
+				-0.1f, 0.5f, 0.1f, // triangle 1 : end
+
+				0.1f, 0.5f,-0.1f, // triangle 2 : begin
+				-0.1f,-0.5f,-0.1f,
+				-0.1f, 0.5f,-0.1f, // triangle 2 : end
+
+				0.1f,-0.5f, 0.1f,
+				-0.1f,-0.5f,-0.1f,
+				0.1f,-0.5f,-0.1f,
+
+				0.1f, 0.5f,-0.1f,
+				0.1f,-0.5f,-0.1f,
+				-0.1f,-0.5f,-0.1f,
+
+				-0.1f,-0.5f,-0.1f,
+				-0.1f, 0.5f, 0.1f,
+				-0.1f, 0.5f,-0.1f,
+
+				0.1f,-0.5f, 0.1f,
+				-0.1f,-0.5f, 0.1f,
+				-0.1f,-0.5f,-0.1f,
+
+				-0.1f, 0.5f, 0.1f,
+				-0.1f,-0.5f, 0.1f,
+				0.1f,-0.5f, 0.1f,
+
+				0.1f, 0.5f, 0.1f,
+				0.1f,-0.5f,-0.1f,
+				0.1f, 0.5f,-0.1f,
+
+				0.1f,-0.5f,-0.1f,
+				0.1f, 0.5f, 0.1f,
+				0.1f,-0.5f, 0.1f,
+
+				0.1f, 0.5f, 0.1f,
+				0.1f, 0.5f,-0.1f,
+				-0.1f, 0.5f,-0.1f,
+
+				0.1f, 0.5f, 0.1f,
+				-0.1f, 0.5f,-0.1f,
+				-0.1f, 0.5f, 0.1f,
+
+				0.1f, 0.5f, 0.1f,
+				-0.1f, 0.5f, 0.1f,
+				0.1f,-0.5f, 0.1f
+			};
+
+			static const GLfloat color_buffer_data [] = {
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+
+				1,1,0, // color 1
+				0,1,1, // color 2
+				1,1,0.4, // color 3
+
+				1,1,0.4, // color 3
+				0.5,0.5,0.5, // color 4
+				1,1,0,  // color 1
+			};
+
+			limb[i] = create3DObject(GL_TRIANGLES, 36, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}	
+
+
 		void draw(){
 
 			glUseProgram (programID);
@@ -1440,6 +1595,55 @@ class Person{
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			draw3DObject(per);
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveLimb = glm::translate(glm::vec3(posx+0.2,posy-1,posz));
+			Matrices.model *= moveLimb;
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(limb[0]);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveLimb2 = glm::translate(glm::vec3(posx-0.2,posy-1,posz));
+			Matrices.model *= moveLimb2;
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(limb[1]);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveLimb3 = glm::translate(glm::vec3(posx-0.5,posy+0.2,posz));
+			glm::mat4 rotateLimb3 =  glm::rotate((float)(-70*M_PI/180.0f), glm::vec3(0,0,1));
+			Matrices.model *= (moveLimb3*rotateLimb3);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(limb[2]);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveLimb4 = glm::translate(glm::vec3(posx+0.5,posy+0.2,posz));
+			glm::mat4 rotateLimb4 =  glm::rotate((float)(70*M_PI/180.0f), glm::vec3(0,0,1));
+			Matrices.model *= (moveLimb4*rotateLimb4);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(limb[3]);
+
+			Matrices.model = glm::mat4(1.0f);
+			glm::mat4 moveHead = glm::translate(glm::vec3(posx,posy+0.875,posz));
+			//glm::mat4 rotateLimb4 =  glm::rotate((float)(70*M_PI/180.0f), glm::vec3(0,0,1));
+			Matrices.model *= (moveHead);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(head);
+
+		}
+
+		void move(){
+			if(dir==1)
+				posx++;
+			if(dir==2)
+				posz--;
+			if(dir==3)
+				posx--;
+			if(dir==4)
+				posz++;
 
 		}
 
@@ -1453,16 +1657,19 @@ class Person{
 				posx++;
 			if(dir==4)
 				posz--;
-			posy=1.5-hitno*0.05;
+			posy=2.5-hitno*0.05;
 			center[0]=posx;
 			center[1]=posy;
 			center[2]=posz;
 			score--;
+			speed=10;
+			dir=0;
 			if(posy<1.01){
 				posx=0;
-				posy=1.5;
+				posy=2.5;
 				posz=0;
 				lives--;
+				hitno=0;
 			}
 
 		}
@@ -1477,7 +1684,7 @@ class Person{
 
 			if(posx==can.posx && posz == can.posz && can.show){
 				can.show=false;
-				posy = 3.5;
+				posy = 4.5;
 				levitate=true;
 			}
 		}
@@ -1489,7 +1696,7 @@ class Person{
 			z = posz;
 			index = (10*z + x);
 			ind1 = index;
-			if(!brick[ind1].isThere && posy <= 1.5){
+			if(!brick[ind1].isThere && posy <= 2.5){
 				//cout << "index: " << index << endl;
 				fall();		
 			}
@@ -1521,10 +1728,13 @@ class Person{
 			count++;
 			if(count==10){
 				lives--;
+				hitno=0;
 				posx=0;
-				posy=1.5;
+				posy=2.5;
 				posz=0;
 				count=0;
+				speed=10;
+				dir=0;
 			}
 
 		}
@@ -1532,8 +1742,8 @@ class Person{
 		void leap(){
 			if(jump){
 				posy += vel*deltaTime - (0.5*5*deltaTime*deltaTime);
-				if(posy<1.5){
-					posy=1.5;
+				if(posy<2.5){
+					posy=2.5;
 					jump=false;
 				}
 				if(dir==1){
@@ -1578,9 +1788,15 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				person.t=0;
 				person.dir=0;
 				person.posx = (int)person.posx;
-				person.posy = 1.5;
+				person.posy = 2.5;
 				person.posz = (int)person.posz;
 				break;
+			case GLFW_KEY_F:
+				person.speed-=1;
+			case GLFW_KEY_S:
+				person.speed+=1;
+			case GLFW_KEY_P:
+				person.dir=0;
 			default:
 				break;
 		}
@@ -1802,6 +2018,11 @@ void initGL (GLFWwindow* window, int width, int height)
 	brick[1].isThere = true;
 	bg.createAxes();
 	person.create();
+	person.createLimb(0);
+	person.createLimb(1);
+	person.createLimb(2);
+	person.createLimb(3);
+	person.createHead(30,30);
 	for(i=0;i<3;i++){
 		obstacle[i].posx = rand()%10;
 		obstacle[i].posy = 2;
@@ -1912,7 +2133,7 @@ int main (int argc, char** argv)
 {
 	int width = 600;
 	int height = 600;
-	int counter=0;
+	int counter=0,move_count=0;
 	stringstream ss1;
         string convStr1,concatStr;
 	GLFWwindow* window = initGLFW(width, height);
@@ -1951,6 +2172,7 @@ int main (int argc, char** argv)
 				light[i].draw();
 			person.collectCoin(i);
 		}
+		
 		person.draw();
 		for(i=0;i<3;i++)
 			obstacle[i].draw();
@@ -1978,6 +2200,9 @@ int main (int argc, char** argv)
 		current_time = glfwGetTime(); // Time in seconds
 		if ((current_time - last_update_time) >= 0.025) { // atleast 0.5s elapsed since last frame
 			last_update_time = current_time;
+			move_count++;
+			if(move_count%person.speed==0)
+				person.move();
 			if(jump){
 				deltaTime+=0.025;
 				//cout << "time: " << deltaTime << endl;
@@ -1987,7 +2212,7 @@ int main (int argc, char** argv)
 				counter++;
 				if(counter==320){
 					counter=0;
-					person.posy=1.5;
+					person.posy=2.5;
 					person.levitate=false;
 				}
 			}
