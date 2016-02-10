@@ -507,16 +507,21 @@ class Brick{
 		float posy;
 		float posz;
 		bool isThere;
+		bool isMove;
 		int index1;
 		int index2;
-
+		int count;
+		int dir;
 		Brick(){
 			posx = 0;
 			posy = 0;
 			posz = 0;
 			isThere=true;
+			isMove=false;
 			index1=0;
 			index2=0;
+			count=0;
+			dir=1;
 		}
 		void create(){
 
@@ -863,9 +868,13 @@ class Brick{
 			glm::mat4 MVP;	// MVP = Projection * View * Model
 			Matrices.model = glm::mat4(1.0f);
 			posz = i;
-			posy = 0;
 			posx = j;
-			glm::mat4 translateBrick = glm::translate(glm::vec3(j, 0, i));   
+			if(isMove){
+				posy-=dir*0.03;
+				if(posy < -0.75 || posy > 0.55)
+					dir = -1*dir;
+			}
+			glm::mat4 translateBrick = glm::translate(glm::vec3(posx, posy, posz));   
 			Matrices.model *= translateBrick;
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -891,9 +900,8 @@ class Brick{
 			glm::mat4 MVP;	// MVP = Projection * View * Model
 			Matrices.model = glm::mat4(1.0f);
 			posz = i;
-			posy = 0;
 			posx = j;
-			glm::mat4 translateBrick = glm::translate(glm::vec3(j, 0, i));   
+			glm::mat4 translateBrick = glm::translate(glm::vec3(posx, posy, posz));   
 			Matrices.model *= translateBrick;
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -1008,6 +1016,7 @@ class Obstacle{
 		float angle;
 		int count;
 		int dir;
+		float speed;
 		Obstacle(){
 			posx=0;
 			posy=0;
@@ -1016,6 +1025,7 @@ class Obstacle{
 			center[0]=posx;
 			center[1]=posy;
 			center[2]=posz;
+			speed=0.07;
 			angle=0;
 			count=0;
 			dir=1;
@@ -1081,9 +1091,15 @@ class Obstacle{
 			Matrices.model *= moveSp;
 			angle+=2;
 			count++;
-			posy += dir*0.07;
-			if(count%40==0)
-				dir = -1*dir;
+			posy += dir*speed;
+			if(center[1] < 2){
+				dir = 1;
+				center[1] = 2.1;
+			}
+			if(center[1] > 4){
+				dir = -1;
+				center[1] = 3.8;
+			}
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			draw3DObject(sp);
@@ -1290,11 +1306,13 @@ class Person{
 		int coins;
 		int score;
 		int speed;
+		float beforeht;
 		Person(){
 			isMoving=false;
 			posx=0;
 			posy=2.5;
 			posz=0;
+			beforeht = posy;
 			dir=0;
 			t=0;
 			coins=0;
@@ -1587,14 +1605,17 @@ class Person{
 			glm::mat4 VP = Matrices.projection * Matrices.view;
 			glm::mat4 MVP;  // MVP = Projection * View * Model
 			Matrices.model = glm::mat4(1.0f);
-			glm::mat4 moveBrick = glm::translate(glm::vec3(posx,posy,posz));
+			glm::mat4 moveBody = glm::translate(glm::vec3(posx,posy,posz));
 			center[0]=posx;
 			center[1]=posy;
 			center[2]=posz;
-			Matrices.model *= moveBrick;
+			Matrices.model *= moveBody;
+			if(!jump)
+				beforeht = posy;
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			draw3DObject(per);
+
 			Matrices.model = glm::mat4(1.0f);
 			glm::mat4 moveLimb = glm::translate(glm::vec3(posx+0.2,posy-1,posz));
 			Matrices.model *= moveLimb;
@@ -1664,7 +1685,7 @@ class Person{
 			score--;
 			speed=10;
 			dir=0;
-			if(posy<1.01){
+			if(posy<1.5){
 				posx=0;
 				posy=2.5;
 				posz=0;
@@ -1703,6 +1724,18 @@ class Person{
 
 		}
 
+		void checkBelowMoving(){
+			float x,z;
+			float index;
+			int ind1;
+			x = posx;
+			z = posz;
+			index = (10*z + x);
+			ind1 = index;
+			if(brick[ind1].isMove && brick[ind1].posy < 1.5 && posy <= 2.5){
+				fall();		
+			}
+		}
 		void checkBoundary(){
 			float x,z;
 			float index;
@@ -1742,8 +1775,9 @@ class Person{
 		void leap(){
 			if(jump){
 				posy += vel*deltaTime - (0.5*5*deltaTime*deltaTime);
-				if(posy<2.5){
-					posy=2.5;
+				if(posy<beforeht){
+					//cout << beforeht << endl;
+					posy=beforeht;
 					jump=false;
 				}
 				if(dir==1){
@@ -1788,15 +1822,21 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				person.t=0;
 				person.dir=0;
 				person.posx = (int)person.posx;
-				person.posy = 2.5;
+				person.posy = person.beforeht;
 				person.posz = (int)person.posz;
 				break;
 			case GLFW_KEY_F:
 				person.speed-=1;
+				if(person.speed<=2){
+					person.speed=2;
+				}
+				break;
 			case GLFW_KEY_S:
 				person.speed+=1;
+				break;
 			case GLFW_KEY_P:
 				person.dir=0;
+				break;
 			default:
 				break;
 		}
@@ -2014,8 +2054,15 @@ void initGL (GLFWwindow* window, int width, int height)
 	for(i=0;i<100;i++){
 		brick[i].create();
 	}
+	for(i=0;i<5;i++){
+		num = rand()%100;
+		brick[num].isMove = true;
+		brick[num].isThere = true;
+	}
 	brick[0].isThere = true;
 	brick[1].isThere = true;
+	brick[0].isMove = false;
+	brick[1].isMove = false;
 	bg.createAxes();
 	person.create();
 	person.createLimb(0);
@@ -2027,7 +2074,9 @@ void initGL (GLFWwindow* window, int width, int height)
 		obstacle[i].posx = rand()%10;
 		obstacle[i].posy = 2;
 		obstacle[i].posz = rand()%10;
+		obstacle[i].speed = (((float)(rand()%50))/1000) + 0.04;
 		obstacle[i].create(30,30);
+		//cout << obstacle[i].speed << endl;
 	}
 	can.create();
 	can.createStraw();
@@ -2177,16 +2226,21 @@ int main (int argc, char** argv)
 		for(i=0;i<3;i++)
 			obstacle[i].draw();
 		person.checkBelow();
+		person.checkBelowMoving();
 		person.checkCan();
 		for(i=0;i<3;i++){
 			person.checkObstacle(i);
 		}
+
 		person.checkBoundary();
 		person.leap();
+
 		eye2=glm::vec3(person.posx,person.posy,person.posz+0.5);
 		target2=glm::vec3(person.posx,person.posy,person.posz+2);
+
 		eye3=glm::vec3(person.posx,person.posy+1,person.posz-1.5);
 		target3=glm::vec3(person.posx,person.posy,person.posz+2);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		if(person.lives==0){
@@ -2201,12 +2255,21 @@ int main (int argc, char** argv)
 		if ((current_time - last_update_time) >= 0.025) { // atleast 0.5s elapsed since last frame
 			last_update_time = current_time;
 			move_count++;
-			if(move_count%person.speed==0)
+			if(move_count%person.speed == 0)
 				person.move();
 			if(jump){
 				deltaTime+=0.025;
 				//cout << "time: " << deltaTime << endl;
 				person.t+=0.025;
+			}
+			if(move_count%240==0){
+				for(i=0;i<3;i++){
+					obstacle[i].posx = rand()%10;
+					obstacle[i].posy = 2;
+					obstacle[i].posz = rand()%10;
+					obstacle[i].speed = (((float)(rand()%50))/1000) + 0.04;
+					obstacle[i].dir = 1;
+				}
 			}
 			if(person.levitate){
 				counter++;
