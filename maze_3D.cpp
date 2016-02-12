@@ -508,6 +508,8 @@ class Brick{
 		float posx;
 		float posy;
 		float posz;
+		float center[3];
+		float radius;
 		bool isThere;
 		bool isMove;
 		int index1;
@@ -518,6 +520,10 @@ class Brick{
 			posx = 0;
 			posy = 0;
 			posz = 0;
+			center[0] = posx;
+			center[1] = posy;
+			center[2] = posz;
+			radius = 1;
 			isThere=true;
 			isMove=false;
 			index1=0;
@@ -706,52 +712,52 @@ class Brick{
 
 		}
 
-	 void createDown(GLuint textureID,int i){
-                        static const GLfloat vertex_buffer_data [] = {
-                                0.5f, -1, 0.5f,
-                                -0.5f, -1, 0.5f,
-                                -0.5f, -1,-0.5f,
+		void createDown(GLuint textureID,int i){
+			static const GLfloat vertex_buffer_data [] = {
+				0.5f, -1, 0.5f,
+				-0.5f, -1, 0.5f,
+				-0.5f, -1,-0.5f,
 
-                                -0.5f, -1,-0.5f,
-                                0.5f, -1,-0.5f,
-                                0.5f, -1, 0.5f,
-                        };
-                        static const GLfloat color_buffer_data [] = {
-                                1,0,0, // color 1
-                                0,0,1, // color 2
-                                0,1,0, // color 3
+				-0.5f, -1,-0.5f,
+				0.5f, -1,-0.5f,
+				0.5f, -1, 0.5f,
+			};
+			static const GLfloat color_buffer_data [] = {
+				1,0,0, // color 1
+				0,0,1, // color 2
+				0,1,0, // color 3
 
-                                0,1,0, // color 3
-                                0.3,0.3,0.3, // color 4
-                                1,0,0  // color 1
-                        };
+				0,1,0, // color 3
+				0.3,0.3,0.3, // color 4
+				1,0,0  // color 1
+			};
 
-                        // Texture coordinates start with (0,0) at top left of the image to (1,1) at bot right
-                        static const GLfloat texture_buffer_data [] = {
-                                0,1, // TexCoord 1 - bot left
-                                1,1, // TexCoord 2 - bot right
-                                1,0, // TexCoord 3 - top right
+			// Texture coordinates start with (0,0) at top left of the image to (1,1) at bot right
+			static const GLfloat texture_buffer_data [] = {
+				0,1, // TexCoord 1 - bot left
+				1,1, // TexCoord 2 - bot right
+				1,0, // TexCoord 3 - top right
 
-                                1,0, // TexCoord 3 - top right
-                                0,0, // TexCoord 4 - top left
-                                0,1  // TexCoord 1 - bot left
-                        };
+				1,0, // TexCoord 3 - top right
+				0,0, // TexCoord 4 - top left
+				0,1  // TexCoord 1 - bot left
+			};
 
-                        // create3DTexturedObject creates and returns a handle to a VAO that can be used later
-                        bottom[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
+			// create3DTexturedObject creates and returns a handle to a VAO that can be used later
+			bottom[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
 
-                }
+		}
 
 
 		void createBack(GLuint textureID,int i){
 			static const GLfloat vertex_buffer_data [] = {
 				-0.5f, -1, -0.5f,
-                                0.5f,-1, -0.5f,
-                                0.5f,1, -0.5f,
+				0.5f,-1, -0.5f,
+				0.5f,1, -0.5f,
 
-                                0.5f,1, -0.5f,
-                                -0.5f, 1, -0.5f,
-                                -0.5f, -1, -0.5f,
+				0.5f,1, -0.5f,
+				-0.5f, 1, -0.5f,
+				-0.5f, -1, -0.5f,
 
 			};
 			static const GLfloat color_buffer_data [] = {
@@ -779,7 +785,7 @@ class Brick{
 			back[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
 
 		}
-	
+
 		void createLeft(GLuint textureID,int i){
 			static const GLfloat vertex_buffer_data [] = {
 				-0.5f,-1,-0.5f, // triangle 1 : begin
@@ -812,7 +818,7 @@ class Brick{
 			};
 
 			// create3DTexturedObject creates and returns a handle to a VAO that can be used later
-		left[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
+			left[i] = create3DTexturedObject(GL_TRIANGLES, 6, vertex_buffer_data, texture_buffer_data, textureID, GL_FILL);
 
 		}
 		void createRight(GLuint textureID,int i){
@@ -872,8 +878,8 @@ class Brick{
 			posz = i;
 			posx = j;
 			if(isMove){
-				posy-=dir*(0.01 + i*0.001 + j*0.001);
-				if(posy < -0.75 || posy > 0.55)
+				posy-=dir*(0.02 + i*0.002 + j*0.002);
+				if(posy < -2.75 || posy > 2.55)
 					dir = -1*dir;
 			}
 			glm::mat4 translateBrick = glm::translate(glm::vec3(posx, posy, posz));   
@@ -911,7 +917,7 @@ class Brick{
 				draw3DTexturedObject(gif[index1]);
 			else
 				draw3DTexturedObject(gif[31-index1]);
-			
+
 			draw3DTexturedObject(top[index2]);
 			draw3DTexturedObject(right[index2]);
 			draw3DTexturedObject(left[index2]);
@@ -1146,7 +1152,7 @@ class Can{
 					vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
 					vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
 				}
-					factor+=0.0003;
+				factor+=0.0003;
 
 			}
 
@@ -1170,69 +1176,69 @@ class Can{
 			sh = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
-		
+
 		void createStraw(){
-                        float factor=0.1;
-                        int numVertices = 360,i;
-                        float height=0.001;
-                        int j;
-                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices*1500];
-                        for(j=0;j<1500;j++){
-                                for (i=0; i<numVertices; i++) {
-                                        vertex_buffer_data [3*numVertices*j + 3*i] = factor*radius*cos(i*M_PI/180.0f);
-                                        vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
-                                        vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
-                                }
+			float factor=0.1;
+			int numVertices = 360,i;
+			float height=0.001;
+			int j;
+			GLfloat* vertex_buffer_data = new GLfloat [3*numVertices*1500];
+			for(j=0;j<1500;j++){
+				for (i=0; i<numVertices; i++) {
+					vertex_buffer_data [3*numVertices*j + 3*i] = factor*radius*cos(i*M_PI/180.0f);
+					vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
+					vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
+				}
 
-                        }
+			}
 
-                        GLfloat* color_buffer_data = new GLfloat [3*numVertices*1500];
+			GLfloat* color_buffer_data = new GLfloat [3*numVertices*1500];
 
-                        for(j=0;j<1500;j++){
-                                for (i=0; i<numVertices; i++){
-                                                color_buffer_data [3*numVertices*j + 3*i] = 1;
-                                                color_buffer_data [3*numVertices*j + 3*i + 1] = 1;
-                                                color_buffer_data [3*numVertices*j + 3*i + 2] = 1;
-                                }
-                        }
+			for(j=0;j<1500;j++){
+				for (i=0; i<numVertices; i++){
+					color_buffer_data [3*numVertices*j + 3*i] = 1;
+					color_buffer_data [3*numVertices*j + 3*i + 1] = 1;
+					color_buffer_data [3*numVertices*j + 3*i + 2] = 1;
+				}
+			}
 
-                        straw = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+			straw = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
-                }
+		}
 
 		void createUmb(int slices,int stacks){
-                        int n = 2 * (slices + 1) * stacks;
-                        int i = 0;
-                        GLfloat *points = new GLfloat[3*n];
-                        GLfloat *color = new GLfloat[3*n];
-                        for (float theta = -M_PI / 2; theta < M_PI/2 - 0.0001; theta += M_PI / stacks) {
-                                for (float phi = -M_PI; phi <= 0.0001; phi += M_PI / slices) {
+			int n = 2 * (slices + 1) * stacks;
+			int i = 0;
+			GLfloat *points = new GLfloat[3*n];
+			GLfloat *color = new GLfloat[3*n];
+			for (float theta = -M_PI / 2; theta < M_PI/2 - 0.0001; theta += M_PI / stacks) {
+				for (float phi = -M_PI; phi <= 0.0001; phi += M_PI / slices) {
 
-                                        points[3*i] = radius*(cos(theta) * sin(phi));
-                                        points[3*i + 1] = radius*(-sin(theta));
-                                        points[3*i + 2] = radius*(cos(theta) * cos(phi));
+					points[3*i] = radius*(cos(theta) * sin(phi));
+					points[3*i + 1] = radius*(-sin(theta));
+					points[3*i + 2] = radius*(cos(theta) * cos(phi));
 
-                                        color[3*i] = 1;
-                                        color[3*i + 1] = 0.2;
-                                        color[3*i + 2] = 0.6;
+					color[3*i] = 1;
+					color[3*i + 1] = 0.2;
+					color[3*i + 2] = 0.6;
 
-                                        i++;
+					i++;
 
-                                        points[3*i] = radius*(cos(theta + M_PI / stacks) * sin(phi));
-                                        points[3*i + 1] = radius*(-sin(theta + M_PI / stacks));
-                                        points[3*i + 2] = radius*(cos(theta + M_PI / stacks) * cos(phi));
+					points[3*i] = radius*(cos(theta + M_PI / stacks) * sin(phi));
+					points[3*i + 1] = radius*(-sin(theta + M_PI / stacks));
+					points[3*i + 2] = radius*(cos(theta + M_PI / stacks) * cos(phi));
 
-                                        color[3*i] = 1;
-                                        color[3*i + 1] = 0.2;
-                                        color[3*i + 2] = 0.6;
+					color[3*i] = 1;
+					color[3*i + 1] = 0.2;
+					color[3*i + 2] = 0.6;
 
-                                        i++;
-                                }
-                        }
+					i++;
+				}
+			}
 
-                        umb = create3DObject(GL_TRIANGLE_STRIP, n, points, color, GL_FILL);
+			umb = create3DObject(GL_TRIANGLE_STRIP, n, points, color, GL_FILL);
 
-                }
+		}
 
 
 		void draw(){
@@ -1299,6 +1305,8 @@ class Person{
 		bool isMoving;
 		bool levitate;
 		bool onMTile;
+		bool onMTileJump;
+		bool move1;
 		int dir;
 		float t;
 		int hitno;
@@ -1314,6 +1322,8 @@ class Person{
 		Person(){
 			isMoving=false;
 			onMTile=false;
+			onMTileJump=false;
+			move1=false;
 			posx=0;
 			posy=2.5;
 			posz=0;
@@ -1451,15 +1461,15 @@ class Person{
 					points[3*i] = radius*(cos(theta) * sin(phi));
 					points[3*i + 1] = radius*(-sin(theta));
 					points[3*i + 2] = radius*(cos(theta) * cos(phi));
-					
+
 					color[3*i] = 1;
 					color[3*i + 1] = 1;
 					color[3*i + 2] = 0;
 
 					if(theta> -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
-					color[3*i] = 0;
-					color[3*i + 1] = 0;
-					color[3*i + 2] = 0;
+						color[3*i] = 0;
+						color[3*i + 1] = 0;
+						color[3*i + 2] = 0;
 					}
 
 					i++;
@@ -1473,9 +1483,9 @@ class Person{
 					color[3*i + 2] = 0;
 
 					if(theta > -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
-					color[3*i] = 0;
-					color[3*i + 1] = 0;
-					color[3*i + 2] = 0;
+						color[3*i] = 0;
+						color[3*i + 1] = 0;
+						color[3*i + 2] = 0;
 					}
 					i++;
 				}
@@ -1665,15 +1675,16 @@ class Person{
 		}
 
 		void move(){
-			if(dir==1)
-				posx++;
-			if(dir==2)
-				posz--;
-			if(dir==3)
-				posx--;
-			if(dir==4)
-				posz++;
-
+			if(posy>=2.5){
+				if(dir==1)
+					posx++;
+				if(dir==2)
+					posz--;
+				if(dir==3)
+					posx--;
+				if(dir==4)
+					posz++;
+			}
 		}
 
 		void back(){
@@ -1709,6 +1720,7 @@ class Person{
 			}
 		}
 
+
 		void checkCan(){
 
 			if(posx==can.posx && posz == can.posz && can.show){
@@ -1742,7 +1754,6 @@ class Person{
 			ind1 = index;
 			if(brick[ind1].isMove && !jump && !levitate){
 				onMTile=true;
-				//fall();
 				posy = brick[ind1].posy + 2.5;		
 			}
 			else{
@@ -1776,17 +1787,17 @@ class Person{
 
 		void fall(){
 			posy = -1;
-			count++;
-			if(count==10){
-				lives--;
-				hitno=0;
-				posx=0;
-				posy=2.5;
-				posz=0;
-				count=0;
-				speed=10;
-				dir=0;
-			}
+			//count++;
+			//if(count==10){
+			lives--;
+			hitno=0;
+			posx=0;
+			posy=2.5;
+			posz=0;
+			count=0;
+			speed=10;
+			dir=0;
+			//}
 
 		}
 
@@ -1827,56 +1838,56 @@ void changeCam(int choice){
 	if(choice==0){
 		eye4 = glm::vec3(8,8,11);
 		target4 = glm::vec3(4,2,1);
-	
+
 		eye4x = 8;
 		eye4y = 8;
 		eye4z = 11;
-		
+
 		target4x = 4;	
 		target4y = 2;	
 		target4z = 1;	
-	
+
 	}
 	else if(choice==1){
 		eye4 = glm::vec3(8,8,-11);
 		target4 = glm::vec3(4,2,-1);
-	
+
 		eye4x = 8;
 		eye4y = 8;
 		eye4z = -11;
-		
+
 		target4x = 4;	
 		target4y = 2;	
 		target4z = -1;	
-	
+
 	}
 
 	else if(choice==2){
 		eye4 = glm::vec3(-8,8,-11);
 		target4 = glm::vec3(-4,2,-1);
-	
+
 		eye4x = -8;
 		eye4y = 8;
 		eye4z = -11;
-		
+
 		target4x = -4;	
 		target4y = 2;	
 		target4z = -1;	
-	
+
 	}
 
 	else if(choice==3){
 		eye4 = glm::vec3(-8,8,11);
 		target4 = glm::vec3(-4,2,1);
-	
+
 		eye4x = -8;
 		eye4y = 8;
 		eye4z = 11;
-		
+
 		target4x = -4;	
 		target4y = 2;	
 		target4z = 1;	
-	
+
 	}
 
 }
@@ -1900,6 +1911,10 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				person.dir=0;
 				person.posx = (int)person.posx;
 				person.posy = person.beforeht;
+				if(person.onMTileJump){
+					person.posy=2.5;
+					person.onMTileJump=false;
+				}
 				person.posz = (int)person.posz;
 				break;
 			case GLFW_KEY_F:
@@ -1917,6 +1932,19 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 			case GLFW_KEY_C:
 				choice=(choice+1)%4;
 				changeCam(choice);
+				break;
+			case GLFW_KEY_UP:
+				person.move1=false;
+				break;
+			case GLFW_KEY_DOWN:
+				person.move1=false;
+				break;
+			case GLFW_KEY_LEFT:
+				person.move1=false;
+				break;
+			case GLFW_KEY_RIGHT:
+				person.move1=false;
+				break;
 			default:
 				break;
 		}
@@ -1927,10 +1955,17 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				quit(window);
 				break;
 			case GLFW_KEY_SPACE:
+				if(person.onMTile && person.posy < 2.5){
+					person.dir=0;
+					person.onMTileJump=true;
+				}
+				//else	
 				jump=true;	
 				break;
 			case GLFW_KEY_UP:
-				if(view==1||view==2||choice==1||choice==2){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
 					person.posz+=1;
 					person.dir=4;
 				}	
@@ -1940,18 +1975,22 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				}
 				break;
 			case GLFW_KEY_DOWN:
-				if(view==1||view==2||choice==1||choice==2){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
 					person.posz-=1;
 					person.dir=2;
 				}
-		
+
 				else{		
 					person.posz+=1;
 					person.dir=4;
 				}
 				break;
 			case GLFW_KEY_LEFT:
-				if(view==1||view==2||choice==1||choice==2){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
 					person.posx+=1;
 					person.dir=1;
 				}
@@ -1962,11 +2001,13 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 				}
 				break;
 			case GLFW_KEY_RIGHT:
-				if(view==1||view==2||choice==1||choice==2){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
 					person.posx-=1;
 					person.dir=3;
 				}
-		
+
 				else{
 					person.posx+=1;
 					person.dir=1;
@@ -2008,11 +2049,20 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 /* Executed when a mouse button is pressed/released */
 bool pressNext=false;
 void mouse_callback(GLFWwindow* window,double x,double y){
-        if(pressNext){
+	if(pressNext){
+
+		/*if(choice==0)
+		  target1=glm::vec3(x/75-4,1,y/75-4);
+		  else if(choice==1)
+		  target2=glm::vec3(x/75-4,1,y/75-4);
+		  else if(choice==2)
+		  target3=glm::vec3(x/75-4,1,y/75-4);
+		  else if(choice==3)
+		  target4=glm::vec3(x/75-4,1,y/75-4);
+		  else*/
 		target4=glm::vec3(x/75-4,1,y/75-4);
-		//cout << "mouse: " << x << " " << y << endl;
-        }
-        
+	}
+
 }
 
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
@@ -2020,10 +2070,10 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
 			if (action == GLFW_PRESS)
-					pressNext=true;
+				pressNext=true;
 			if (action == GLFW_RELEASE)
-					pressNext=false;
-				break;
+				pressNext=false;
+			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			if (action == GLFW_RELEASE) {
 			}
@@ -2036,16 +2086,16 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 float zoom_x,zoom_y,zoom_z;
 void scroll(GLFWwindow* window,double x,double y){
 	if(choice==0)
-	  	eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
+		eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
 	else if(choice==1)
-	  	eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
+		eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
 	else if(choice==2)
-	  	eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
+		eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z-zoom_z);	
 	else if(choice==3)
-	  	eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
+		eye4 = glm::vec3(eye4x-zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
 	zoom_x += -y*0.5;
-  	zoom_y += -y*0.5;
-  	zoom_z += -y*0.5;
+	zoom_y += -y*0.5;
+	zoom_z += -y*0.5;
 
 }
 
@@ -2122,8 +2172,8 @@ GLFWwindow* initGLFW (int width, int height)
 
 	/* Register function to handle mouse click */
 	glfwSetMouseButtonCallback(window, mouseButton);  // mouse button clicks
-        glfwSetScrollCallback(window, scroll);
-        glfwSetCursorPosCallback(window,mouse_callback);
+	glfwSetScrollCallback(window, scroll);
+	glfwSetCursorPosCallback(window,mouse_callback);
 
 	return window;
 }
@@ -2171,7 +2221,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	can.posz = rand()%5 + 3;
 	can.create();
 	can.createStraw();
-        can.createUmb(30,30);
+	can.createUmb(30,30);
 	brick[86].isThere = false;
 	for(i=0;i<6;i++){
 		light[i].posx = rand()%10;
@@ -2214,7 +2264,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	GLuint textureID16 = createTexture("frame-016.png");	
 	GLuint textureID17 = createTexture("sand2.png");	
 	GLuint textureID18 = createTexture("sand2.png");	
-	
+
 
 	textureProgramID = LoadShaders( "TextureRender.vert", "TextureRender.frag" );
 	// Get a handle for our "MVP" uniform
@@ -2225,32 +2275,32 @@ void initGL (GLFWwindow* window, int width, int height)
 	// Create the models
 	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
 	for(i=0;i<100;i++){
-	brick[i].createFront(textureID1,0);
-	brick[i].createFront(textureID2,1);
-	brick[i].createFront(textureID3,2);
-	brick[i].createFront(textureID4,3);
-	brick[i].createFront(textureID5,4);
-	brick[i].createFront(textureID6,5);
-	brick[i].createFront(textureID7,6);
-	brick[i].createFront(textureID8,7);
-	brick[i].createFront(textureID9,8);
-	brick[i].createFront(textureID10,9);
-	brick[i].createFront(textureID11,10);
-	brick[i].createFront(textureID12,11);
-	brick[i].createFront(textureID13,12);
-	brick[i].createFront(textureID14,13);
-	brick[i].createFront(textureID15,14);
-	brick[i].createFront(textureID16,15);
-	brick[i].createUp(textureID17,0);
-	brick[i].createUp(textureID18,1);
-	brick[i].createDown(textureID17,0);
-	brick[i].createDown(textureID18,1);
-	brick[i].createRight(textureID17,0);
-	brick[i].createRight(textureID18,1);
-	brick[i].createLeft(textureID17,0);
-	brick[i].createLeft(textureID18,1);
-	brick[i].createBack(textureID17,0);
-	brick[i].createBack(textureID18,1);
+		brick[i].createFront(textureID1,0);
+		brick[i].createFront(textureID2,1);
+		brick[i].createFront(textureID3,2);
+		brick[i].createFront(textureID4,3);
+		brick[i].createFront(textureID5,4);
+		brick[i].createFront(textureID6,5);
+		brick[i].createFront(textureID7,6);
+		brick[i].createFront(textureID8,7);
+		brick[i].createFront(textureID9,8);
+		brick[i].createFront(textureID10,9);
+		brick[i].createFront(textureID11,10);
+		brick[i].createFront(textureID12,11);
+		brick[i].createFront(textureID13,12);
+		brick[i].createFront(textureID14,13);
+		brick[i].createFront(textureID15,14);
+		brick[i].createFront(textureID16,15);
+		brick[i].createUp(textureID17,0);
+		brick[i].createUp(textureID18,1);
+		brick[i].createDown(textureID17,0);
+		brick[i].createDown(textureID18,1);
+		brick[i].createRight(textureID17,0);
+		brick[i].createRight(textureID18,1);
+		brick[i].createLeft(textureID17,0);
+		brick[i].createLeft(textureID18,1);
+		brick[i].createBack(textureID17,0);
+		brick[i].createBack(textureID18,1);
 	}
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
@@ -2275,7 +2325,7 @@ int main (int argc, char** argv)
 	int height = 600;
 	int counter=0,move_count=0;
 	stringstream ss1;
-        string convStr1,concatStr;
+	string convStr1,concatStr;
 	GLFWwindow* window = initGLFW(width, height);
 	initGL (window, width, height);
 	double last_update_time = glfwGetTime(), current_time;
@@ -2284,11 +2334,11 @@ int main (int argc, char** argv)
 		bg.clean1();
 		bg.draw();
 		ss1.str("");
-                ss1 << person.score;
-                convStr1 = ss1.str();
-                concatStr = "Waterfall Maze!!!\t\t\t\t\t Score: " + convStr1;
-                const char *gameTitle = concatStr.c_str();
-                glfwSetWindowTitle(window,gameTitle);
+		ss1 << person.score;
+		convStr1 = ss1.str();
+		concatStr = "Waterfall Maze!!!\t\t\t\t\t Score: " + convStr1;
+		const char *gameTitle = concatStr.c_str();
+		glfwSetWindowTitle(window,gameTitle);
 
 		for(i=0;i<10;i++)
 		{
@@ -2296,7 +2346,7 @@ int main (int argc, char** argv)
 				if(brick[(10*i)+j].isThere){
 					brick[(10*i)+j].draw(i,j);
 					brick[(10*i)+j].drawGif(i,j);
-					}
+				}
 			}
 		}
 
@@ -2312,7 +2362,7 @@ int main (int argc, char** argv)
 				light[i].draw();
 			person.collectCoin(i);
 		}
-		
+
 		person.draw();
 		for(i=0;i<3;i++)
 			obstacle[i].draw();
@@ -2346,7 +2396,7 @@ int main (int argc, char** argv)
 		if ((current_time - last_update_time) >= 0.025) { // atleast 0.5s elapsed since last frame
 			last_update_time = current_time;
 			move_count++;
-			if(move_count%person.speed == 0)
+			if(person.move1 && move_count%person.speed == 0)
 				person.move();
 			if(jump){
 				deltaTime+=0.025;
@@ -2372,7 +2422,7 @@ int main (int argc, char** argv)
 			}
 			for(i=0;i<100;i++)
 				brick[i].index1 = (brick[i].index1 + 1)%16;	
-				brick[i].index2 = (brick[i].index2 + 1)%2;	
+			brick[i].index2 = (brick[i].index2 + 1)%2;	
 		}
 	}
 
