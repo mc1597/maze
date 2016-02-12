@@ -502,6 +502,90 @@ class Heart{
 
 Heart heart[4];
 
+class Bar{
+
+	public:
+		VAO *htb;
+		float posx;
+		float posy;
+		float posz;
+		Bar(){
+			posx = 0;
+			posy = 0;
+			posz = 0;
+		}
+		void create(int i){
+			if(i<5){
+				static const GLfloat vertex_buffer_data [] = {
+					1,1,0,
+					-1,1,0,
+					-1,-1,0,
+
+					-1,-1,0,
+					1,-1,0,
+					1,1,0,
+				};
+
+				static const GLfloat color_buffer_data [] = {
+					1,0,0, // color 0
+					1,0,0, // color 0
+					1,0,0, // color 0
+
+					1,0,0, // color 0
+					1,0,0, // color 0
+					1,0,0, // color 0
+				};
+				htb = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+			}
+			else{
+				static const GLfloat vertex_buffer_data [] = {
+					1,1,0,
+					-1,1,0,
+					-1,-1,0,
+
+					-1,-1,0,
+					1,-1,0,
+					1,1,0,
+				};
+
+				static const GLfloat color_buffer_data [] = {
+					0,1,0, // color 0
+					0,1,0, // color 0
+					0,1,0, // color 0
+
+					0,1,0, // color 0
+					0,1,0, // color 0
+					0,1,0, // color 0
+				};
+				htb = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+			}
+
+		}
+
+		void draw(float posx,float posy,float scalex,float scaley){
+
+			glUseProgram (programID);
+			Matrices.view = glm::lookAt(glm::vec3(1,3,4),glm::vec3(1,3,0),up);
+			glm::mat4 VP = Matrices.projection * Matrices.view;
+			glm::mat4 MVP;  // MVP = Projection * View * Model
+			Matrices.model = glm::mat4(1.0f);
+
+			Matrices.model = glm::mat4(1.0f);
+
+			glm::mat4 translateHtb = glm::translate (glm::vec3(posx, posy, 0));
+			glm::mat4 scaleHtb = glm::scale(glm::vec3(scalex, scaley, 0));
+			Matrices.model *= (translateHtb*scaleHtb);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(htb);
+
+		}
+
+};
+
+Bar bar[10];
+
 class Brick{
 	public:
 		VAO *br,*gif[16],*top[2],*left[2],*right[2],*back[2],*bottom[2];
@@ -1697,22 +1781,24 @@ class Person{
 				posx++;
 			if(dir==4)
 				posz--;
-			posy=2.5-hitno*0.05;
+			posy=2.5-hitno*0.1;
 			center[0]=posx;
 			center[1]=posy;
 			center[2]=posz;
 			score--;
 			speed=10;
 			dir=0;
-			if(posy<1.5){
-				posx=0;
+			//if(hitno>=10){
+			//	fall();
+				/*posx=0;
 				posy=2.5;
 				posz=0;
 				lives--;
-				hitno=0;
-			}
-
+				hitno=0;*/
+			//}
+			
 		}
+		
 		void checkObstacle(int i){
 			if(sqrt((pow(center[0] - obstacle[i].center[0],2)) +(pow(center[1] - obstacle[i].center[1],2)) + (pow(center[2] - obstacle[i].center[2],2))) <= radius + obstacle[i].radius){
 				back();
@@ -1785,10 +1871,12 @@ class Person{
 			}
 		}
 
+		void checkHealth(){
+		if(hitno>=10)
+			fall();
+		}
 		void fall(){
 			posy = -1;
-			//count++;
-			//if(count==10){
 			lives--;
 			hitno=0;
 			posx=0;
@@ -1797,7 +1885,6 @@ class Person{
 			count=0;
 			speed=10;
 			dir=0;
-			//}
 
 		}
 
@@ -2209,6 +2296,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	person.createLimb(2);
 	person.createLimb(3);
 	person.createHead(30,30);
+	for(i=0;i<10;i++)
+		bar[i].create(i);
 	for(i=0;i<3;i++){
 		obstacle[i].posx = rand()%9 + 1;
 		obstacle[i].posy = 2;
@@ -2364,6 +2453,8 @@ int main (int argc, char** argv)
 		}
 
 		person.draw();
+		for(i=0;i<10-person.hitno;i++)
+			bar[i].draw(6,6+0.2*i,0.25,0.1);
 		for(i=0;i<3;i++)
 			obstacle[i].draw();
 		person.checkBelow();
@@ -2374,6 +2465,7 @@ int main (int argc, char** argv)
 		}
 
 		person.checkBoundary();
+		person.checkHealth();
 		person.leap();
 
 		eye2=glm::vec3(person.posx,person.posy,person.posz+0.5);
