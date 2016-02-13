@@ -1550,11 +1550,11 @@ class Person{
 					color[3*i + 1] = 1;
 					color[3*i + 2] = 0;
 
-					if(theta> -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					/*if(theta> -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
 						color[3*i] = 0;
 						color[3*i + 1] = 0;
 						color[3*i + 2] = 0;
-					}
+					}*/
 
 					i++;
 
@@ -1566,11 +1566,12 @@ class Person{
 					color[3*i + 1] = 1;
 					color[3*i + 2] = 0;
 
-					if(theta > -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					/*if(theta > -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
 						color[3*i] = 0;
 						color[3*i + 1] = 0;
 						color[3*i + 2] = 0;
-					}
+					}*/
+
 					i++;
 				}
 			}
@@ -1891,6 +1892,8 @@ class Person{
 		void leap(){
 			if(jump){
 				posy += vel*deltaTime - (0.5*5*deltaTime*deltaTime);
+				if(!levitate && posy > 4.62)
+					hitno++;
 				if(posy<beforeht){
 					//cout << beforeht << endl;
 					posy=beforeht;
@@ -2135,18 +2138,10 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 
 /* Executed when a mouse button is pressed/released */
 bool pressNext=false;
+bool pressMove=false;
+int moves;
 void mouse_callback(GLFWwindow* window,double x,double y){
 	if(pressNext){
-
-		/*if(choice==0)
-		  target1=glm::vec3(x/75-4,1,y/75-4);
-		  else if(choice==1)
-		  target2=glm::vec3(x/75-4,1,y/75-4);
-		  else if(choice==2)
-		  target3=glm::vec3(x/75-4,1,y/75-4);
-		  else if(choice==3)
-		  target4=glm::vec3(x/75-4,1,y/75-4);
-		  else*/
 		target4=glm::vec3(x/75-4,1,y/75-4);
 	}
 
@@ -2156,13 +2151,22 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
-			if (action == GLFW_PRESS)
+			if (action == GLFW_PRESS){
 				pressNext=true;
-			if (action == GLFW_RELEASE)
+			}
+			if (action == GLFW_RELEASE){
 				pressNext=false;
+			}
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
-			if (action == GLFW_RELEASE) {
+			if (action == GLFW_PRESS){
+				pressMove=true;
+				person.move1=true;
+			}
+			if (action == GLFW_RELEASE){
+				pressMove=false;
+				person.move1=false;
+				moves=0;
 			}
 			break;
 		default:
@@ -2172,6 +2176,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 
 float zoom_x,zoom_y,zoom_z;
 void scroll(GLFWwindow* window,double x,double y){
+	if(pressNext){
 	if(choice==0)
 		eye4 = glm::vec3(eye4x+zoom_x,eye4y+zoom_y,eye4z+zoom_z);	
 	else if(choice==1)
@@ -2183,6 +2188,70 @@ void scroll(GLFWwindow* window,double x,double y){
 	zoom_x += -y*0.5;
 	zoom_y += -y*0.5;
 	zoom_z += -y*0.5;
+	}
+	if(pressMove && moves%person.speed==0){
+		moves++;
+		if(x==1){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
+					person.posx+=1;
+					person.dir=1;
+				}
+
+				else{
+					person.posx-=1;
+					person.dir=3;
+				}
+
+		}
+		else if(x==-1){
+
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
+					person.posx-=1;
+					person.dir=3;
+				}
+
+				else{
+					person.posx+=1;
+					person.dir=1;
+				}
+
+		}
+		else if(y==1){
+				
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
+					person.posz+=1;
+					person.dir=4;
+				}	
+				else{		
+					person.posz-=1;
+					person.dir=2;
+				}
+
+
+		}
+		
+		else if(y==-1){
+				person.move1=true;
+				if(person.onMTile && person.posy < 2.5);
+				else if(view==1||view==2||choice==1||choice==2){
+					person.posz-=1;
+					person.dir=2;
+				}
+
+				else{		
+					person.posz+=1;
+					person.dir=4;
+				}
+
+
+		}	
+	}
 
 }
 
@@ -2287,8 +2356,10 @@ void initGL (GLFWwindow* window, int width, int height)
 	}
 	brick[0].isThere = true;
 	brick[1].isThere = true;
+	brick[99].isThere = true;
 	brick[0].isMove = false;
 	brick[1].isMove = false;
+	brick[99].isMove = false;
 	bg.createAxes();
 	person.create();
 	person.createLimb(0);
@@ -2353,6 +2424,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	GLuint textureID16 = createTexture("frame-016.png");	
 	GLuint textureID17 = createTexture("sand2.png");	
 	GLuint textureID18 = createTexture("sand2.png");	
+	GLuint textureID19 = createTexture("win.png");	
 
 
 	textureProgramID = LoadShaders( "TextureRender.vert", "TextureRender.frag" );
@@ -2391,6 +2463,8 @@ void initGL (GLFWwindow* window, int width, int height)
 		brick[i].createBack(textureID17,0);
 		brick[i].createBack(textureID18,1);
 	}
+		brick[99].createUp(textureID19,0);
+		brick[99].createUp(textureID19,1);
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
 	// Get a handle for our "MVP" uniform
@@ -2480,7 +2554,7 @@ int main (int argc, char** argv)
 			cout << "Score: " << person.score << endl;
 			quit(window);
 		}
-		if(person.coins==6){
+		if(person.coins==6&&person.posx==9&&person.posz==9){
 			cout << "You won!!! Score: " << person.score << endl;
 			quit(window);
 		}
