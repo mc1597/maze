@@ -391,7 +391,7 @@ class Background{
 			Matrices.model = glm::mat4(1.0f);
 			MVP = VP * Matrices.model;
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-			draw3DObject(axis);
+			//draw3DObject(axis);
 
 		}
 
@@ -1550,7 +1550,7 @@ class Person{
 					color[3*i + 1] = 1;
 					color[3*i + 2] = 0;
 
-					/*if(theta> -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					/*if(theta> -90*M_PI/180.0f && theta< -35*M_PI/180.0f){
 						color[3*i] = 0;
 						color[3*i + 1] = 0;
 						color[3*i + 2] = 0;
@@ -1566,7 +1566,7 @@ class Person{
 					color[3*i + 1] = 1;
 					color[3*i + 2] = 0;
 
-					/*if(theta > -40*M_PI/180.0f && theta< -25*M_PI/180.0f){
+					/*if(theta > -90*M_PI/180.0f && theta< -35*M_PI/180.0f){
 						color[3*i] = 0;
 						color[3*i + 1] = 0;
 						color[3*i + 2] = 0;
