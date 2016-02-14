@@ -1201,10 +1201,104 @@ class Obstacle{
 
 Obstacle obstacle[3];
 
+class Timer{
+	public:
+		VAO *clk,*hand;
+		float posx;
+		float posy;
+		float posz;
+		float radius;
+		bool show;
+		float center[3];
+		float angle;
+		Timer(){
+			posx=-5;
+			posy=6;
+			posz=0;
+			radius=0.5;
+			center[0]=posx;
+			center[1]=posy;
+			center[2]=posz;
+			show = false;
+			angle=0;
+		}	
+		void createCircle(){
+		int numVertices = 360;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                vertex_buffer_data [3*i] = radius*cos(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 1] = radius*sin(i*M_PI/180.0f);
+                                vertex_buffer_data [3*i + 2] = 0;
+                        }
+
+
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices];
+                        for (int i=0; i<numVertices; i++) {
+                                color_buffer_data [3*i] = 1;
+                                color_buffer_data [3*i + 1] = 1;
+                                color_buffer_data [3*i + 2] = 1;
+                        }
+
+
+                        // create3DObject creates and returns a handle to a VAO that can be used later
+                        clk = create3DObject(GL_TRIANGLE_FAN, numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+		}
+		void createHand(){
+			 static const GLfloat vertex_buffer_data [] = {
+                                        1,1,0,
+                                        0,1,0,
+                                        0,0,0,
+
+                                        0,0,0,
+                                        1,0,0,
+                                        1,1,0,
+                                };
+
+                                static const GLfloat color_buffer_data [] = {
+                                        0,0,0, // color 0
+                                        0,0,0, // color 0
+                                        0,0,0, // color 0
+
+                                        0,0,0, // color 0
+                                        0,0,0, // color 0
+                                        0,0,0, // color 0
+                                };
+                                hand = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+			
+		}
+
+		void draw(){
+			glUseProgram (programID);
+                        Matrices.view = glm::lookAt(glm::vec3(-1,3,4),glm::vec3(-1,3,0),up);
+                        glm::mat4 VP = Matrices.projection * Matrices.view;
+                        glm::mat4 MVP;  // MVP = Projection * View * Model
+                        Matrices.model = glm::mat4(1.0f);
+                        glm::mat4 translateClk = glm::translate (glm::vec3(posx, posy, 0));
+                        Matrices.model *= (translateClk);
+                        MVP = VP * Matrices.model;
+                        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+                        draw3DObject(clk);
+			
+                        Matrices.model = glm::mat4(1.0f);
+                        glm::mat4 translateHand = glm::translate (glm::vec3(posx, posy, 0));
+			glm::mat4 rotateHand = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
+                        glm::mat4 scaleHand = glm::scale(glm::vec3(0.075, 0.5, 0));
+                        Matrices.model *= (translateHand*rotateHand*scaleHand);
+                        MVP = VP * Matrices.model;
+                        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+                        draw3DObject(hand);
+			angle-=0.565;
+		}
+		
+};
+
+Timer timer;
 class Can{
 
 	public:
-		VAO *sh,*hs,*straw,*umb;
+		VAO *sh,*hs,*straw,*umb,*bend[2];
 		float posx;
 		float posy;
 		float posz;
@@ -1280,15 +1374,45 @@ class Can{
 
 			for(j=0;j<1500;j++){
 				for (i=0; i<numVertices; i++){
-					color_buffer_data [3*numVertices*j + 3*i] = 1;
-					color_buffer_data [3*numVertices*j + 3*i + 1] = 1;
-					color_buffer_data [3*numVertices*j + 3*i + 2] = 1;
+					color_buffer_data [3*numVertices*j + 3*i] = 0;
+					color_buffer_data [3*numVertices*j + 3*i + 1] = 0;
+					color_buffer_data [3*numVertices*j + 3*i + 2] = 0;
 				}
 			}
 
 			straw = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
 
 		}
+
+		void createBendyStraw(int index){
+                        float factor=0.1;
+                        int numVertices = 360,i;
+                        float height=0.001;
+                        int j;
+                        GLfloat* vertex_buffer_data = new GLfloat [3*numVertices*1500];
+                        for(j=0;j<1500;j++){
+                                for (i=0; i<numVertices; i++) {
+                                        vertex_buffer_data [3*numVertices*j + 3*i] = factor*radius*cos(i*M_PI/180.0f);
+                                        vertex_buffer_data [3*numVertices*j + 3*i + 1] = height*j;
+                                        vertex_buffer_data [3*numVertices*j + 3*i + 2] = factor*radius*sin(i*M_PI/180.0f);
+                                }
+
+                        }
+
+                        GLfloat* color_buffer_data = new GLfloat [3*numVertices*1500];
+
+                        for(j=0;j<1500;j++){
+                                for (i=0; i<numVertices; i++){
+                                        color_buffer_data [3*numVertices*j + 3*i] = 1;
+                                        color_buffer_data [3*numVertices*j + 3*i + 1] = 1;
+                                        color_buffer_data [3*numVertices*j + 3*i + 2] = 1;
+                                }
+                        }
+
+                        bend[index] = create3DObject(GL_TRIANGLE_FAN, 1500*numVertices, vertex_buffer_data, color_buffer_data, GL_FILL);
+
+                }
+
 
 		void createUmb(int slices,int stacks){
 			int n = 2 * (slices + 1) * stacks;
@@ -1343,9 +1467,9 @@ class Can{
 			//Matrices.view = glm::lookAt( eye, target, up ); // Rotating Camera for 3D
 			glm::mat4 VP = Matrices.projection * Matrices.view;
 			glm::mat4 MVP;  // MVP = Projection * View * Model
-			angle=15;
+			angle=10;
 			Matrices.model = glm::mat4(1.0f);
-			glm::mat4 moveSt = glm::translate(glm::vec3(posx-0.15,posy,posz));
+			glm::mat4 moveSt = glm::translate(glm::vec3(posx-0.1,posy,posz));
 			glm::mat4 rotateSt = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
 			center[0] = posx;
 			center[1] = posy;
@@ -1355,11 +1479,32 @@ class Can{
 			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 			draw3DObject(straw);
 
+
+			Matrices.model = glm::mat4(1.0f);
+			angle=-15;
+			glm::mat4 moveB1 = glm::translate(glm::vec3(posx+0.1,posy,posz));
+			glm::mat4 rotateB1 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
+			Matrices.model *= (moveB1*rotateB1);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(bend[0]);
+
+
+			Matrices.model = glm::mat4(1.0f);
+			angle=-145;
+			glm::mat4 moveB2 = glm::translate(glm::vec3(0,1.5,0));
+			glm::mat4 rotateB2 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
+			glm::mat4 scaleB2 = glm::scale(glm::vec3(1,0.3,1));
+			Matrices.model *= (moveB1*rotateB1*moveB2*rotateB2*scaleB2);
+			MVP = VP * Matrices.model;
+			glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			draw3DObject(bend[1]);
+		
 			Matrices.model = glm::mat4(1.0f);
 			glm::mat4 moveUmb = glm::translate(glm::vec3(0.1,1.35,0));
 			angle=-90;
 			glm::mat4 rotateUmb1 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,0,1));
-			angle=20;
+			angle=15;
 			glm::mat4 rotateUmb2 = glm::rotate((float)(angle*M_PI/180.0f), glm::vec3(0,1,0));
 			Matrices.model *= (moveSt * rotateSt * moveUmb * rotateUmb1 * rotateUmb2);
 			MVP = VP * Matrices.model;
@@ -1783,6 +1928,8 @@ class Person{
 			if(dir==4)
 				posz--;
 			posy=2.5-hitno*0.1;
+			timer.show=false;
+			levitate=false;
 			center[0]=posx;
 			center[1]=posy;
 			center[2]=posz;
@@ -1814,6 +1961,7 @@ class Person{
 				can.show=false;
 				posy = 4.5;
 				levitate=true;
+				
 			}
 		}
 		void checkBelow(){
@@ -1886,6 +2034,8 @@ class Person{
 			count=0;
 			speed=10;
 			dir=0;
+			levitate=false;
+			timer.show=false;
 
 		}
 
@@ -2369,6 +2519,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	person.createHead(30,30);
 	for(i=0;i<10;i++)
 		bar[i].create(i);
+	timer.createCircle();
+	timer.createHand();
 	for(i=0;i<3;i++){
 		obstacle[i].posx = rand()%9 + 1;
 		obstacle[i].posy = 2;
@@ -2381,6 +2533,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	can.posz = rand()%5 + 3;
 	can.create();
 	can.createStraw();
+	can.createBendyStraw(0);
+	can.createBendyStraw(1);
 	can.createUmb(30,30);
 	brick[86].isThere = false;
 	for(i=0;i<6;i++){
@@ -2531,6 +2685,8 @@ int main (int argc, char** argv)
 			bar[i].draw(6,6+0.2*i,0.25,0.1);
 		for(i=0;i<3;i++)
 			obstacle[i].draw();
+		if(timer.show)
+			timer.draw();
 		person.checkBelow();
 		person.checkBelowMoving();
 		person.checkCan();
@@ -2579,11 +2735,14 @@ int main (int argc, char** argv)
 				}
 			}
 			if(person.levitate){
+				timer.show=true;
 				counter++;
 				if(counter==320){
 					counter=0;
 					person.posy=2.5;
 					person.levitate=false;
+					timer.show=false;
+					timer.angle=0;
 				}
 			}
 			for(i=0;i<100;i++)
