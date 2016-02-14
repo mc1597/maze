@@ -1905,7 +1905,7 @@ class Person{
 		}
 
 		void move(){
-			if(posy>=2.5){
+			if(!onMTile ||onMTile&&posy>=2.5){
 				if(dir==1)
 					posx++;
 				if(dir==2)
