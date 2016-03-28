@@ -2414,8 +2414,8 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 	   is different from WindowSize */
 	glfwGetFramebufferSize(window, &fbwidth, &fbheight);
 
-	GLfloat fov = 90.0f;
 
+	GLfloat fov = 90.0f;
 	// sets the viewport of openGL renderer
 	glViewport (0, 0, (GLsizei) fbwidth, (GLsizei) fbheight);
 
